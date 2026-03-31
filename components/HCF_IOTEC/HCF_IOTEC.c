@@ -162,25 +162,19 @@ uint8_t io_le_escreve(uint8_t saidas)
 {
     int j;
     uint8_t entradas = 0;
-    gpio_set_level(IO_SH_LD,1);
-   // ets_delay_us(10); //vTaskDelay(10 / portTICK_RATE_MS);  
+    gpio_set_level(IO_SH_LD,1); 
     for (j = 7; j >= 0; j--)
     {
         entradas <<= 1;
         entradas += gpio_get_level(IO_DT_RD);
         gpio_set_level(IO_DT_WR, ( saidas >> j ) & 1);
-      //  ets_delay_us(10); //vTaskDelay(10 / portTICK_RATE_MS);
         gpio_set_level(IO_CK,1);
-      //  ets_delay_us(10); //vTaskDelay(10 / portTICK_RATE_MS);
         gpio_set_level(IO_CK,0);
-       // ets_delay_us(10); //vTaskDelay(10 / portTICK_RATE_MS);
     } 
     gpio_set_level(IO_SH_LD,0);
-   // ets_delay_us(10); //vTaskDelay(10 / portTICK_RATE_MS); 
-    gpio_set_level(IO_SH_LD,1);//testar
+    gpio_set_level(IO_SH_LD,1);
     gpio_set_level(IO_SH_LD,0);
     return entradas;
-
 }
 
 void iniciar_iotec(void)
