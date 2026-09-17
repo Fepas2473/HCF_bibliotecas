@@ -1,13 +1,3 @@
-/*
-*   Neste exemplo temos 4 devices registrados no Wegnology, usando o sensor DHT para publicar periodicamente no broker
-*   Também subscreve ao tópico command, recebendo que vier pelo rótulo LED
-*
-*   Temos 2 modos, automatico e manual - automatico cria task para fazer um envio por batelada
-*   Manual publica de modo normal os 2 atributos   
-*
-*   Autor: Hagaceef
-*
-*/
 
 // Área de inclusão das bibliotecas
 //-----------------------------------------------------------------------------------------------------------------------
@@ -29,10 +19,10 @@
 
 // Área das macros
 //-----------------------------------------------------------------------------------------------------------------------
-#define MODO 1 // Automatico
-//#define MODO 0 // Manual
+//#define MODO 1 // Automatico
+#define MODO 0 // Manual
 
-#define ESP 4 //1 2 3 4 -> Device
+#define ESP 1 
 
 #define WIFI_SSID "coqueiro"
 #define WIFI_PASS "amigos12"
@@ -40,15 +30,8 @@
 //#define WIFI_SSID "GUEST"
 //#define WIFI_PASS "cade204820"
 
-#if (ESP==1)
+
     #define DEVICE_ID "65774aa82623fd911ab650c1" //ESP1
-#elif (ESP==2)
-    #define DEVICE_ID "6810f5b23c10b7b2e9e4e6d8" //ESP2
-#elif (ESP==3)
-    #define DEVICE_ID "6811023f30642df2ffeaa490" //ESP3
-#else
-    #define DEVICE_ID "6811025d30642df2ffeaa4da" //ESP4
-#endif
 
 #define W_ACCESS_KEY "76ac5ed2-ed18-4e96-9e02-d2dd572db083" //use a chave de acesso e a senha
 #define W_PASSWORD "f52797619b7205bc2ac8d796d80fd0cb23f988e882cd0b82d575b26939f78c1c"
@@ -67,30 +50,6 @@ float temperatura = 0.0, umidade = 0.0;
 // Funções e ramos auxiliares
 //-----------------------------------------------------------------------------------------------------------------------
 
-// Task para ler sensor e armazenar no buffer
-void leitura_task(void *param) {
-    //float temp, umid;
-    while (true) {
-        if (DHT_temp_umidade(&temperatura, &umidade)) {
-            buffer_add(temperatura, umidade);  // Armazena temperatura, umidade e timestamp no buffer da lib
-            ESP_LOGI(TAG, "Sensor lido e adicionado ao buffer: %.1f °C, %.1f %%", temperatura, umidade);
-        } else {
-            ESP_LOGW(TAG, "Falha ao ler sensor");
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(10000)); // Aguarda 15s
-    }
-}
-
-// Task para enviar dados armazenados a cada 1 minuto
-void envio_task(void *param) {
-    while (true) {
-        enviar_buffer(); // Publica todos os dados armazenados
-        check_wifi_reconnection(); // Verifica inatividade de Wi-Fi
-        ESP_LOGI(TAG, "Lote enviado!");
-        vTaskDelay(pdMS_TO_TICKS(60000)); // Aguarda 1 minuto
-    }
-}
 
 // Função para receber dados e extrair o JSON do tópico command
 /*
@@ -127,13 +86,6 @@ void app_main(void)
 
     /////////////////////////////////////////////////////////////////////////////////////   Periféricos inicializados
 
-#if (MODO == 1) 
-    xTaskCreate(leitura_task, "leitura_task", 4096, NULL, 5, NULL);
-    xTaskCreate(envio_task, "envio_task", 4096, NULL, 5, NULL);
-    while(1){
-        vTaskDelay(pdMS_TO_TICKS(10000));
-    }
-#else
     while (1) {
         float temperatura=0, umidade=0;
         //char buffer[15];
@@ -162,7 +114,7 @@ void app_main(void)
         }
         vTaskDelay(pdMS_TO_TICKS(10000));  // publica a cada 10s
     }
-#endif
+
 
     /////////////////////////////////////////////////////////////////////////////////////   Fim do ramo principal
     
